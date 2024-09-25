@@ -1,14 +1,32 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.Android;
 
 public class GPSManager : MonoBehaviour
 {
     public TextMeshProUGUI gpsText;
+    public Button getCoordinatesButton;
+    public Button setCoordinatesButton;
     private bool isLocationEnabled;
+    private Vector3 savedCoordinates;
 
     void Start()
     {
+        // Assign button listeners
+        getCoordinatesButton.onClick.AddListener(GetCoordinates);
+        setCoordinatesButton.onClick.AddListener(SetCoordinates);
+
+        // Handle Android location permission
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+            {
+                Permission.RequestUserPermission(Permission.FineLocation);
+            }
+        }
+
         StartCoroutine(StartLocationService());
     }
 
@@ -54,12 +72,47 @@ public class GPSManager : MonoBehaviour
 
     void Update()
     {
+        // Continuously update the coordinates
         if (isLocationEnabled)
         {
-            // Fetch and display GPS coordinates
             gpsText.text = $"Latitude: {Input.location.lastData.latitude} \n" +
                            $"Longitude: {Input.location.lastData.longitude} \n" +
                            $"Altitude: {Input.location.lastData.altitude}";
+        }
+    }
+
+    // Button click method to get and display coordinates
+    void GetCoordinates()
+    {
+        if (isLocationEnabled)
+        {
+            float latitude = Input.location.lastData.latitude;
+            float longitude = Input.location.lastData.longitude;
+            float altitude = Input.location.lastData.altitude;
+
+            gpsText.text = $"Current Coordinates:\nLat: {latitude}, Long: {longitude}, Alt: {altitude}";
+        }
+        else
+        {
+            gpsText.text = "Location not available!";
+        }
+    }
+
+    // Button click method to set & store current coordinates
+    void SetCoordinates()
+    {
+        if (isLocationEnabled)
+        {
+            savedCoordinates = new Vector3(
+                Input.location.lastData.latitude,
+                Input.location.lastData.longitude,
+                Input.location.lastData.altitude);
+
+            gpsText.text = $"Coordinates Set:\nLat: {savedCoordinates.x}, Long: {savedCoordinates.y}, Alt: {savedCoordinates.z}";
+        }
+        else
+        {
+            gpsText.text = "Cannot set coordinates. Location not available!";
         }
     }
 }
