@@ -701,6 +701,7 @@ MonoBehaviour:
   gpsText: {fileID: 1599622214}
   getCoordinatesButton: {fileID: 1977070420}
   setCoordinatesButton: {fileID: 1140702899}
+  calculateDistanceButton: {fileID: 15658696}
 --- !u!1 &641529604
 GameObject:
   m_ObjectHideFlags: 0
@@ -869,6 +870,7 @@ MonoBehaviour:
   gpsText: {fileID: 1599622214}
   getCoordinatesButton: {fileID: 0}
   setCoordinatesButton: {fileID: 0}
+  calculateDistanceButton: {fileID: 0}
 --- !u!4 &738287505
 Transform:
   m_ObjectHideFlags: 0
