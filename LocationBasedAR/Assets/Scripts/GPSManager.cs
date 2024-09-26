@@ -10,8 +10,8 @@ public class GPSManager : MonoBehaviour
     public Button getCoordinatesButton; // Button to get current coordinates
     public Button setCoordinatesButton; // Button to set (save) coordinates
     public Button calculateDistanceButton; // Button to calculate distance
-    public GPSToUnity gpsToUnityConverter; // Optional: for converting GPS coordinates to Unity positions
-    public Transform objectToMove; // Optional: move object based on GPS position
+    public GPSToUnity gpsToUnityConverter; // For converting GPS coordinates to Unity positions
+    public Transform objectToMove; // Move object based on GPS position
 
     private bool isLocationEnabled;
     private Vector3 savedCoordinates;
@@ -81,7 +81,7 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // This function will be called when the "Get Coordinates" button is clicked
+    // Called when the "Get Coordinates" button is clicked
     public void GetCoordinates()
     {
         if (isLocationEnabled)
@@ -98,7 +98,7 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // This function will be called when the "Set Coordinates" button is clicked
+    // Called when the "Set Coordinates" button is clicked
     public void SetCoordinates()
     {
         if (isLocationEnabled)
@@ -117,7 +117,7 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // This function will be called when the "Calculate Distance" button is clicked
+    // Called when the "Calculate Distance" button is clicked
     public void CalculateDistance()
     {
         if (isLocationEnabled && savedCoordinates != Vector3.zero)
@@ -130,7 +130,7 @@ public class GPSManager : MonoBehaviour
 
             gpsText.text = $"Distance to saved location: {distance} meters";
 
-            // Optional: Convert GPS to Unity position and move the object
+            // Convert GPS to Unity position and move the object
             Vector3 unityPosition = gpsToUnityConverter.GPS2UnityPosition(currentLatitude, currentLongitude, Input.location.lastData.altitude);
             objectToMove.position = unityPosition;
         }
