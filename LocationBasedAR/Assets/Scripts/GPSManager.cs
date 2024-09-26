@@ -10,9 +10,12 @@ public class GPSManager : MonoBehaviour
     public Button getCoordinatesButton;
     public Button setCoordinatesButton;
     public Button calculateDistanceButton;
+    public GPSToUnity gpsToUnityConverter;
+    public Transform objectToMove;
+
     private bool isLocationEnabled;
     private Vector3 savedCoordinates;
-    
+
     void Start()
     {
         // Assign button listeners
@@ -34,17 +37,14 @@ public class GPSManager : MonoBehaviour
 
     IEnumerator StartLocationService()
     {
-        // Check if the user has location service enabled
         if (!Input.location.isEnabledByUser)
         {
             gpsText.text = "Location Services Disabled!";
             yield break;
         }
 
-        // Start service before querying location
         Input.location.Start();
 
-        // Wait until the service initializes
         int maxWait = 20;
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
@@ -52,14 +52,12 @@ public class GPSManager : MonoBehaviour
             maxWait--;
         }
 
-        // Service didn't initialize in 20 seconds
         if (maxWait <= 0)
         {
             gpsText.text = "Timed out";
             yield break;
         }
 
-        // Connection failed
         if (Input.location.status == LocationServiceStatus.Failed)
         {
             gpsText.text = "Unable to determine device location";
@@ -67,14 +65,12 @@ public class GPSManager : MonoBehaviour
         }
         else
         {
-            // Access granted and location value could be retrieved
             isLocationEnabled = true;
         }
     }
 
     void Update()
     {
-        // Continuously update the coordinates display
         if (isLocationEnabled)
         {
             gpsText.text = $"Latitude: {Input.location.lastData.latitude} \n" +
@@ -83,7 +79,6 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Button click method to get and display current coordinates
     void GetCoordinates()
     {
         if (isLocationEnabled)
@@ -100,7 +95,6 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Button click method to set/store current coordinates
     void SetCoordinates()
     {
         if (isLocationEnabled)
@@ -118,7 +112,6 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Button click method to calculate and display distance
     void CalculateDistance()
     {
         if (isLocationEnabled && savedCoordinates != Vector3.zero)
@@ -126,10 +119,13 @@ public class GPSManager : MonoBehaviour
             float currentLatitude = Input.location.lastData.latitude;
             float currentLongitude = Input.location.lastData.longitude;
 
-            // Calculate the distance between saved coordinates & current coordinates
             float distance = HaversineDistance(savedCoordinates.x, savedCoordinates.y, currentLatitude, currentLongitude);
-            
+
             gpsText.text = $"Distance to saved location: {distance} meters";
+
+            // Convert GPS to Unity position and move the object
+            Vector3 unityPosition = gpsToUnityConverter.GPS2UnityPosition(currentLatitude, currentLongitude, Input.location.lastData.altitude);
+            objectToMove.position = unityPosition;
         }
         else
         {
@@ -137,17 +133,15 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Haversine formula to calculate distance between two latitude/longitude points
     float HaversineDistance(float lat1, float lon1, float lat2, float lon2)
     {
-        float R = 6371000; // Earth's radius in meters
+        float R = 6371000;
         float dLat = Mathf.Deg2Rad * (lat2 - lat1);
         float dLon = Mathf.Deg2Rad * (lon2 - lon1);
         float a = Mathf.Sin(dLat / 2) * Mathf.Sin(dLat / 2) +
                   Mathf.Cos(Mathf.Deg2Rad * lat1) * Mathf.Cos(Mathf.Deg2Rad * lat2) *
                   Mathf.Sin(dLon / 2) * Mathf.Sin(dLon / 2);
         float c = 2 * Mathf.Atan2(Mathf.Sqrt(a), Mathf.Sqrt(1 - a));
-        float distance = R * c;
-        return distance;
+        return R * c;
     }
 }
