@@ -10,18 +10,21 @@ public class GPSManager : MonoBehaviour
     public Button getCoordinatesButton; // Button to get current coordinates
     public Button setCoordinatesButton; // Button to set (save) coordinates
     public Button calculateDistanceButton; // Button to calculate distance
+    public Button spawnObjectButton; // Button to spawn an object at the desired coordinates
     public GPSToUnity gpsToUnityConverter; // For converting GPS coordinates to Unity positions
     public Transform objectToMove; // Move object based on GPS position
+    public GameObject objectPrefab; // Prefab to spawn at the GPS location
 
     private bool isLocationEnabled;
     private Vector3 savedCoordinates;
 
     void Start()
     {
-        // Add button listeners for OnClick
+        // Button listeners for OnClick
         getCoordinatesButton.onClick.AddListener(GetCoordinates);
         setCoordinatesButton.onClick.AddListener(SetCoordinates);
         calculateDistanceButton.onClick.AddListener(CalculateDistance);
+        spawnObjectButton.onClick.AddListener(SpawnObjectAtSavedCoordinates);
 
         // Handle Android location permissions
         if (Application.platform == RuntimePlatform.Android)
@@ -35,7 +38,6 @@ public class GPSManager : MonoBehaviour
         StartCoroutine(StartLocationService());
     }
 
-    // Start location services, request user permission if not granted, and wait for initialization
     IEnumerator StartLocationService()
     {
         if (!Input.location.isEnabledByUser)
@@ -70,7 +72,6 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Automatically update the GPS info on the UI
     void Update()
     {
         if (isLocationEnabled)
@@ -81,7 +82,6 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Called when the "Get Coordinates" button is clicked
     public void GetCoordinates()
     {
         if (isLocationEnabled)
@@ -98,12 +98,10 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Called when the "Set Coordinates" button is clicked
     public void SetCoordinates()
     {
         if (isLocationEnabled)
         {
-            // Save current coordinates in the savedCoordinates variable
             savedCoordinates = new Vector3(
                 Input.location.lastData.latitude,
                 Input.location.lastData.longitude,
@@ -117,7 +115,6 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Called when the "Calculate Distance" button is clicked
     public void CalculateDistance()
     {
         if (isLocationEnabled && savedCoordinates != Vector3.zero)
@@ -125,12 +122,10 @@ public class GPSManager : MonoBehaviour
             float currentLatitude = Input.location.lastData.latitude;
             float currentLongitude = Input.location.lastData.longitude;
 
-            // Calculate the distance between the saved coordinates and the current coordinates
             float distance = HaversineDistance(savedCoordinates.x, savedCoordinates.y, currentLatitude, currentLongitude);
 
             gpsText.text = $"Distance to saved location: {distance} meters";
 
-            // Convert GPS to Unity position and move the object
             Vector3 unityPosition = gpsToUnityConverter.GPS2UnityPosition(currentLatitude, currentLongitude, Input.location.lastData.altitude);
             objectToMove.position = unityPosition;
         }
@@ -140,7 +135,24 @@ public class GPSManager : MonoBehaviour
         }
     }
 
-    // Haversine formula to calculate the distance between two GPS points (latitude/longitude)
+    // Method to spawn an object at GPS coordinates
+    public void SpawnObjectAtSavedCoordinates()
+    {
+        if (isLocationEnabled && savedCoordinates != Vector3.zero)
+        {
+            // Convert saved GPS coordinates to Unity position
+            Vector3 unityPosition = gpsToUnityConverter.GPS2UnityPosition(savedCoordinates.x, savedCoordinates.y, savedCoordinates.z);
+
+            // Instantiate the object at the calculated Unity position
+            Instantiate(objectPrefab, unityPosition, Quaternion.identity);
+            gpsText.text = "Object spawned at saved coordinates!";
+        }
+        else
+        {
+            gpsText.text = "Cannot spawn object. Either location is unavailable or coordinates are not set.";
+        }
+    }
+
     float HaversineDistance(float lat1, float lon1, float lat2, float lon2)
     {
         float R = 6371000; // Radius of the Earth in meters
